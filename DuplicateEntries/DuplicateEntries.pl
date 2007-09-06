@@ -21,7 +21,7 @@ our $VERSION = '0.01';
 my $plugin = __PACKAGE__->new({
     id => 'duplicate_entries',
     name => 'DuplicateEntries',
-    description => q(<MT_TRANS phrase="A plugin for building Fiscal Yearly Archives">),
+    description => q(<MT_TRANS phrase="DuplicateEntries plugin allows you to duplicate Movable Type entries and pages.">),
     doc_link => 'http://code.as-is.net/wiki/DuplicateEntries',
     author_name => 'Hirotaka Ogawa',
     author_link => 'http://profile.typekey.com/ogawa/',
