@@ -16,7 +16,7 @@ use MT::Entry;
 use MT::Page;
 use MT::Placement;
 
-our $VERSION = '0.02';
+our $VERSION = '0.01';
 
 my $plugin = __PACKAGE__->new({
     id => 'duplicate_entries',
