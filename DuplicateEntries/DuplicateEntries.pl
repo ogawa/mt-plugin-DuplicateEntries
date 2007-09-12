@@ -74,10 +74,10 @@ sub _duplicate_entries {
     my $class = MT->model($type);
 
     my @entry_ids = $app->param('id')
-	or return $app->trans_error('No entry was selected to duplicate.');
+	or return $app->error($plugin->translate('No entry was selected to duplicate.'));
     for my $entry_id (@entry_ids) {
 	my $entry = $class->load($entry_id)
-	    or return $app->trans_error('Invalid entry_id');
+	    or return $app->error($plugin->translate('Invalid entry_id'));
 	my $entry_cloned = $entry->clone({
 	    except => {
 		id       => 1,
@@ -90,7 +90,7 @@ sub _duplicate_entries {
 	$entry_cloned->tags($entry->tags);
 
 	$entry_cloned->save
-	    or return $app->trans_error('Error saving entry: [_1]', $entry_cloned->errstr);
+	    or return $app->error($plugin->translate('Saving entry failed: [_1]', $entry_cloned->errstr));
 
 	my @places = MT::Placement->load({ entry_id => $entry->id });
 	for my $place (@places) {
@@ -101,7 +101,7 @@ sub _duplicate_entries {
 	    });
 	    $place_cloned->entry_id($entry_cloned->id);
 	    $place_cloned->save
-		or return $app->trans_error('Saving placement failed: [_1]', $place_cloned->errstr);
+		or return $app->error($plugin->translate('Saving placement failed: [_1]', $place_cloned->errstr));
 	}
     }
 
@@ -118,10 +118,10 @@ sub _duplicate_templates {
     my $class = MT->model($type);
 
     my @tmpl_ids = $app->param('id')
-	or return $app->trans_error('No template was selected to duplicate.');
+	or return $app->error($plugin->translate('No template was selected to duplicate.'));
     for my $tmpl_id (@tmpl_ids) {
 	my $tmpl = $class->load($tmpl_id)
-	    or return $app->trans_error('Invalid template_id');
+	    or return $app->error($plugin->translate('Invalid template_id'));
 	my $tmpl_cloned = $tmpl->clone({
 	    except => {
 		id       => 1,
@@ -142,7 +142,7 @@ sub _duplicate_templates {
 	$tmpl_cloned->name($name_cloned);
 
 	$tmpl_cloned->save
-	    or return $app->trans_error('Error saving template: [_1]', $tmpl_cloned->errstr);
+	    or return $app->error($plugin->translate('Saving template failed: [_1]', $tmpl_cloned->errstr));
     }
 
     $app->call_return;
