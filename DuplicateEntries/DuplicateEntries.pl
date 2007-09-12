@@ -15,13 +15,14 @@ use MT;
 use MT::Entry;
 use MT::Page;
 use MT::Placement;
+use MT::Template;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 my $plugin = __PACKAGE__->new({
     id => 'duplicate_entries',
     name => 'DuplicateEntries',
-    description => q(<MT_TRANS phrase="DuplicateEntries plugin allows you to duplicate Movable Type entries and pages.">),
+    description => q(<MT_TRANS phrase="DuplicateEntries plugin allows you to duplicate Movable Type entries, pages, and templates.">),
     doc_link => 'http://code.as-is.net/wiki/DuplicateEntries',
     author_name => 'Hirotaka Ogawa',
     author_link => 'http://profile.typekey.com/ogawa/',
@@ -39,15 +40,22 @@ sub init_registry {
 		    entry => {
 			duplicate_entry => {
 			    label      => $plugin->translate('Duplicate Entries'),
-			    code       => \&list_action_duplicate_entries,
+			    code       => \&_duplicate_entries,
 			    permission => 'create_post',
 			},
 		    },
 		    page => {
 			duplicate_page => {
 			    label      => $plugin->translate('Duplicate Pages'),
-			    code       => \&list_action_duplicate_entries,
+			    code       => \&_duplicate_entries,
 			    permission => 'create_post',
+			},
+		    },
+		    template => {
+			duplicate_template => {
+			    label      => $plugin->translate('Duplicate Templates'),
+			    code       => \&_duplicate_templates,
+			    permission => 'edit_templates',
 			},
 		    },
 		},
@@ -56,7 +64,7 @@ sub init_registry {
     });
 }
 
-sub list_action_duplicate_entries {
+sub _duplicate_entries {
     my $app = shift;
     my $perms = $app->permissions;
     return $app->trans_error('Permission Denied.')
@@ -96,8 +104,48 @@ sub list_action_duplicate_entries {
 		or return $app->trans_error('Saving placement failed: [_1]', $place_cloned->errstr);
 	}
     }
-    $app->mode($type eq 'entry' ? 'list_entries' : 'list_pages');
-    $app->list_entries({ type => $type });
+
+    $app->call_return;
+}
+
+sub _duplicate_templates {
+    my $app = shift;
+    my $perms = $app->permissions;
+    return $app->trans_error('Permission Denied.')
+	unless $perms && $perms->can_edit_templates;
+
+    my $type = 'template';
+    my $class = MT->model($type);
+
+    my @tmpl_ids = $app->param('id')
+	or return $app->trans_error('No template was selected to duplicate.');
+    for my $tmpl_id (@tmpl_ids) {
+	my $tmpl = $class->load($tmpl_id)
+	    or return $app->trans_error('Invalid template_id');
+	my $tmpl_cloned = $tmpl->clone({
+	    except => {
+		id       => 1,
+	    },
+	});
+
+	# generate a unique template name
+	my $blog_id = $tmpl->blog_id;
+	my $name = $tmpl->name;
+	my $name_cloned = $name . ' (1)';
+	my $i = 1;
+	while ($class->count({
+	    name    => $name_cloned,
+	    blog_id => $blog_id,
+	})) {
+	    $name_cloned = $name . ' (' . $i++ . ')';
+	}
+	$tmpl_cloned->name($name_cloned);
+
+	$tmpl_cloned->save
+	    or return $app->trans_error('Error saving template: [_1]', $tmpl_cloned->errstr);
+    }
+
+    $app->call_return;
 }
 
 1;
