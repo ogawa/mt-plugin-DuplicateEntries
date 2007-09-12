@@ -40,21 +40,21 @@ sub init_registry {
 		    entry => {
 			duplicate_entry => {
 			    label      => $plugin->translate('Duplicate Entries'),
-			    code       => \&_duplicate_entries,
+			    code       => \&duplicate_entries,
 			    permission => 'create_post',
 			},
 		    },
 		    page => {
 			duplicate_page => {
 			    label      => $plugin->translate('Duplicate Pages'),
-			    code       => \&_duplicate_entries,
+			    code       => \&duplicate_entries,
 			    permission => 'create_post',
 			},
 		    },
 		    template => {
 			duplicate_template => {
 			    label      => $plugin->translate('Duplicate Templates'),
-			    code       => \&_duplicate_templates,
+			    code       => \&duplicate_templates,
 			    permission => 'edit_templates',
 			},
 		    },
@@ -64,7 +64,7 @@ sub init_registry {
     });
 }
 
-sub _duplicate_entries {
+sub duplicate_entries {
     my $app = shift;
     my $perms = $app->permissions;
     return $app->trans_error('Permission Denied.')
@@ -108,7 +108,7 @@ sub _duplicate_entries {
     $app->call_return;
 }
 
-sub _duplicate_templates {
+sub duplicate_templates {
     my $app = shift;
     my $perms = $app->permissions;
     return $app->trans_error('Permission Denied.')
@@ -127,25 +127,28 @@ sub _duplicate_templates {
 		id       => 1,
 	    },
 	});
-
-	# generate a unique template name
-	my $blog_id = $tmpl->blog_id;
-	my $name = $tmpl->name;
-	my $name_cloned = $name . ' (1)';
-	my $i = 1;
-	while ($class->count({
-	    name    => $name_cloned,
-	    blog_id => $blog_id,
-	})) {
-	    $name_cloned = $name . ' (' . $i++ . ')';
-	}
-	$tmpl_cloned->name($name_cloned);
-
+	$tmpl_cloned->name(make_unique_tmpl_name($tmpl));
 	$tmpl_cloned->save
 	    or return $app->error($plugin->translate('Saving template failed: [_1]', $tmpl_cloned->errstr));
     }
 
     $app->call_return;
+}
+
+sub make_unique_tmpl_name {
+    my $tmpl = shift;
+    my $blog_id = $tmpl->blog_id;
+    my $tmpl_name = $tmpl->name;
+    my $unique_tmpl_name;
+    my $i = 1;
+    do {
+	$unique_tmpl_name = $tmpl_name . ' (' . $i++ . ')';
+    } while (MT->model('template')->count({
+	name    => $unique_tmpl_name,
+	blog_id => $blog_id
+    }));
+
+    $unique_tmpl_name;
 }
 
 1;
