@@ -15,8 +15,8 @@ our %Lexicon = (
     'Saving template failed: [_1]' => 'テンプレートの保存に失敗しました: [_1]',
     'No entry was selected to duplicate.' => '複製するブログ記事が選択されていません。',
     'No template was selected to duplicate.' => '複製するテンプレートが選択されていません。',
-    'Invalid entry_id' => '不正なentry_idです。',
-    'Invalid template_id' => '不正なtemplate_idです。',
+    'Invalid entry_id' => '不正なentry_id',
+    'Invalid template_id' => '不正なtemplate_id',
 );
 
 1;
