@@ -20,14 +20,14 @@ use MT::Template;
 our $VERSION = '0.02';
 
 my $plugin = __PACKAGE__->new({
-    id => 'duplicate_entries',
-    name => 'DuplicateEntries',
+    id          => 'duplicate_entries',
+    name        => 'DuplicateEntries',
     description => q(<MT_TRANS phrase="DuplicateEntries plugin allows you to duplicate Movable Type entries, pages, and templates.">),
-    doc_link => 'http://code.as-is.net/wiki/DuplicateEntries',
+    doc_link    => 'http://code.as-is.net/wiki/DuplicateEntries',
     author_name => 'Hirotaka Ogawa',
     author_link => 'http://profile.typekey.com/ogawa/',
-    version => $VERSION,
-    l10n_class => 'DuplicateEntries::L10N',
+    version     => $VERSION,
+    l10n_class  => 'DuplicateEntries::L10N',
 });
 MT->add_plugin($plugin);
 
@@ -39,23 +39,26 @@ sub init_registry {
 		list_actions => {
 		    entry => {
 			duplicate_entry => {
-			    label      => $plugin->translate('Duplicate Entries'),
-			    code       => \&duplicate_entries,
-			    permission => 'create_post',
+			    label           => $plugin->translate('Duplicate Entries'),
+			    continue_prompt => $plugin->translate('Are you sure you want to duplicate the selected entries?'),
+			    code            => \&duplicate_entries,
+			    permission      => 'create_post',
 			},
 		    },
 		    page => {
 			duplicate_page => {
-			    label      => $plugin->translate('Duplicate Pages'),
-			    code       => \&duplicate_entries,
-			    permission => 'create_post',
+			    label           => $plugin->translate('Duplicate Pages'),
+			    continue_prompt => $plugin->translate('Are you sure you want to duplicate the selected page(s)?'),
+			    code            => \&duplicate_entries,
+			    permission      => 'create_post',
 			},
 		    },
 		    template => {
 			duplicate_template => {
-			    label      => $plugin->translate('Duplicate Templates'),
-			    code       => \&duplicate_templates,
-			    permission => 'edit_templates',
+			    label           => $plugin->translate('Duplicate Templates'),
+			    continue_prompt => $plugin->translate('Are you sure you want to duplicate the selected template(s)?'),
+			    code            => \&duplicate_templates,
+			    permission      => 'edit_templates',
 			},
 		    },
 		},
