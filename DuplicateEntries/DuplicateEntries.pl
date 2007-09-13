@@ -86,6 +86,7 @@ sub duplicate_entries {
 		tangent_cache => 1,
 	    },
 	});
+	$entry_cloned->title(make_unique_entry_title($entry));
 	$entry_cloned->status(MT::Entry::HOLD());
 	$entry_cloned->tags($entry->tags);
 
@@ -124,10 +125,11 @@ sub duplicate_templates {
 	    or return $app->error($plugin->translate('Invalid template_id'));
 	my $tmpl_cloned = $tmpl->clone({
 	    except => {
-		id       => 1,
+		id => 1,
 	    },
 	});
 	$tmpl_cloned->name(make_unique_tmpl_name($tmpl));
+
 	$tmpl_cloned->save
 	    or return $app->error($plugin->translate('Saving template failed: [_1]', $tmpl_cloned->errstr));
     }
@@ -135,15 +137,35 @@ sub duplicate_templates {
     $app->call_return;
 }
 
+sub make_unique_entry_title {
+    my $entry = shift;
+    my $class = ref $entry || MT->model($entry->class_type);
+
+    my $blog_id = $entry->blog_id;
+    my $title = $entry->title;
+    my $unique_title;
+    my $i = 1;
+    do {
+	$unique_title = $title . ' (' . $i++ . ')';
+    } while ($class->count({
+	title   => $unique_title,
+	blog_id => $blog_id
+    }));
+
+    $unique_title;
+}
+
 sub make_unique_tmpl_name {
     my $tmpl = shift;
+    my $class = ref $tmpl || MT->model('template');
+
     my $blog_id = $tmpl->blog_id;
     my $tmpl_name = $tmpl->name;
     my $unique_tmpl_name;
     my $i = 1;
     do {
 	$unique_tmpl_name = $tmpl_name . ' (' . $i++ . ')';
-    } while (MT->model('template')->count({
+    } while ($class->count({
 	name    => $unique_tmpl_name,
 	blog_id => $blog_id
     }));
