@@ -106,6 +106,19 @@ sub duplicate_entries {
 	    $place_cloned->entry_id($entry_cloned->id);
 	    $place_cloned->save
 		or return $app->error($plugin->translate('Saving placement failed: [_1]', $place_cloned->errstr));
+
+	    my @obj_assets = MT::ObjectAsset->load({ object_id => $entry->id });
+	    for my $obj_asset ( @obj_assets ) {
+		my $new_obj_asset = $obj_asset->clone({
+		    except => {
+			id => 1,
+			object_id => 1,
+		    },
+		});
+		$new_obj_asset->object_id( $entry_cloned->id );
+		$new_obj_asset->save
+		    or return $app->error($plugin->translate('Saving objectasset failed: [_1]', $entry_cloned->errstr));
+	    }
 	}
     }
 
