@@ -5,7 +5,6 @@ use strict;
 use base 'DuplicateEntries::L10N';
 use vars qw( %Lexicon );
 
-our %Lexicon = (
-);
+our %Lexicon = ();
 
 1;
